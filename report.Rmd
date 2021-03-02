@@ -1,5 +1,5 @@
 ---
-title: "Classclimate and school related behavioral problems"
+title: "Analyses: Classclimate 2020"
 author: "Jürgen Wilbert"
 date: "Version (`r Sys.Date()`)"
 
@@ -18,82 +18,108 @@ biblio-style: apalike
 ---
 
 ```{r setup, include=FALSE}
-source("start.R")
+# load packages -----------------------------------------------------------
+
+if (!("wmisc" %in% installed.packages())) 
+  devtools::install_github("jazznbass/wmisc")
+if (!("scaledic" %in% installed.packages())) 
+  devtools::install_github("jazznbass/scaledic")
+
+packages <- c('sjPlot', 'knitr', 'semTable', 'kableExtra', 'bookdown', 
+              'scaledic', 'Amelia', 'wmisc', 'psych', 'lavaan', 'nlme', 'lme4',
+              'tidyverse', 'readxl', 'gridExtra', 'broom')
+
+invisible(sapply(packages, library, character.only = TRUE))
+
+# load data
+
+dat <- readRDS("data.rds")
+
+
+.var <- c(
+  "feess_kk", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", 
+  "sar_perpetrator", "itrf_int", "itrf_ext", "itrf_sw", "itrf_ad", "itrf_apd", 
+  "itrf_opp", "itrf_int", "itrf_ext", "n_valid_like"
+)
+.var <- paste0(.var, rep(c("_mean", "_sd"), each = length(.var)))
+
+dat_agg <- dat %>% group_by(id_class_teacher) %>%
+  summarise(across(!!.var, mean))
+
+# set parameters
+
 knitr::opts_chunk$set(echo = TRUE)
+
+# function for nicer output
+html_table <- function(table, title = "", footnote = "") {
+  
+  title <- paste0("Table.<br><i>", title, "</i>")
+  kable(table, caption = title) %>%
+   kable_classic() %>%
+   footnote(footnote)
+}
 ```
 
-# Software acknowledgement
+# Software acknowledgment
 
-The following packages were used for this report:  
+The following packages were used for this report:
 
-`R` at version `r R.version$version.string` [@R-base]. 
+`R` at version `r R.version$version.string` [@R-base].
 
 ```{r package_reference, results="asis", echo=FALSE}
 wmisc::reference_package_version(packages)
 ```
 
----
+------------------------------------------------------------------------
 
+# Descriptives
 
-# Scales
-
-```{r scales}
-list_scales(dat, labels = TRUE)
-```
-
-
-```{r exploratory factor analysis}
-#  c("itrf_int", "itrf_ext", "FEESS12_GA", "FEESS12_KK", "FEESS12_SI","FEESS34_KK", "FEESS34_SI", "ELFE_WV", "ELFE_SV", "ELFE_TV", "age","LM_in", "LL_in","Friend_in","migration_background", "sex", "grade", "id_class_teacher")
-
-c("itrf_int", "itrf_ext", "FEESS12_GA", "FEESS12_KK", "FEESS12_SI","FEESS34_KK", "FEESS34_SI", "ELFE_WV", "ELFE_SV", "ELFE_TV", "age","LM_in", "LL_in","Friend_in","migration_background", "sex", "grade", "id_class_teacher")
-
-```
-
-
-```{r}
-model <- "
-    classclimate =~ mean_feess_si + mean_feess_kk + mean_LM_in + mean_LL_in + mean_Friend_in + mean_sar_perpetrator + mean_sar_victim
-"
-
-model <- "
-    mean_feess_kk ~ mean_feess_si +  + mean_LM_in + mean_LL_in + mean_Friend_in + mean_sar_perpetrator + mean_sar_victim
-"
-
-fit <- sem(model, dat_mean, std.lv = TRUE)
-
-
-tidy(fit)
-glance(fit)
-summary(fit, fit.measures = TRUE)
-
-```
-
-
-
-```{r confirmatory_fa, comment = ""}
-
-scales <- list(
-  sar = c("SAR_O", "SAR_V"),
-  itrf = c("itrf_sw", "itrf_ad", "itrf_apd", "itrf_opp")
-  
+```{r descriptives_l1}
+.var <- c(
+  "feess_kk", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", 
+  "sar_perpetrator", "itrf_int", "itrf_ext", "itrf_sw", "itrf_ad", "itrf_apd", "itrf_opp", "itrf_int", "itrf_ext", "age"
 )
-  
-.tmp <-  c("itrf_int", "itrf_ext", "FEESS12_GA", "FEESS12_KK", "FEESS12_SI","FEESS34_KK", "FEESS34_SI", "ELFE_WV", "ELFE_SV", "ELFE_TV", "age","LM_in", "LL_in","Friend_in","migration_background", "sex", "grade", "id_class_teacher")
 
-.vars <- c("FEESS34_KK", "FEESS34_SI", "LM_in", "LL_in","Friend_in", "SAR_O", "SAR_V")
+# correct wrong class in age (is: time; should be: numeric)
+class(dat$age) <- c("dic", "numeric")
 
-dat %>% select(all_of(.vars)) %>% fa()
+dat %>% select(!!.var) %>% descriptives() %>% html_table
 
-model <- "
-  level: 1
-    wellbeing =~ feess_si + LM_in + LL_in + Friend_in + SAR_V + SAR_O
-  level: 2
-    classclimate =~ feess_si + LM_in + LL_in + Friend_in + SAR_V + SAR_O
-"
+dat %>% group_by(grade) %>% summarise(n = n()) %>% html_table
+dat %>% group_by(sex) %>% summarise(n = n()) %>% html_table
+dat %>% group_by(migration_background) %>% summarise(n = n()) %>% html_table
 
+dat %>% select(!!.var) %>% wmisc::nice_corrmatrix(lower = FALSE) %>% html_table
+```
 
-fit <- sem(model, dat, std.lv = TRUE, cluster = "id_class_teacher")
-summary(fit, fit.measures = TRUE)
+```{r descriptives_l2}
+descriptives(dat_agg[-1]) %>% html_table
+dat_agg %>% 
+  select(ends_with("_mean")) %>%
+  wmisc::nice_corrmatrix(lower = FALSE) %>% html_table
 ```
 
 
+# Exploratory factor analyses
+
+```{r efa_l1}
+var <- c("feess_kk", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", "sar_perpetrator")
+
+dat %>% select(!!var) %>% fa.parallel()
+
+dat %>% select(!!var) %>% exploratory_fa(nfactors = 3) %>% html_table()
+
+```
+
+```{r efa_l2}
+var <- c("feess_kk", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", "sar_perpetrator")
+var <- paste0(var, "_mean")
+
+dat_agg %>% select(!!var) %>% fa.parallel()
+
+dat_agg %>% select(!!var) %>% exploratory_fa(nfactors = 3) %>% html_table()
+
+```
+
+
+# Reference
