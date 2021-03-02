@@ -39,7 +39,7 @@ dat <- readRDS("data.rds")
 .var <- c(
   "feess_kk", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", 
   "sar_perpetrator", "itrf_int", "itrf_ext", "itrf_sw", "itrf_ad", "itrf_apd", 
-  "itrf_opp", "itrf_int", "itrf_ext", "soc_relatedness", "soc_positivity", "n_valid_like"
+  "itrf_opp", "itrf_int", "itrf_ext", "soc_relatedness", "soc_positivity", "n_valid_like", "density_ll", "density_lm", "density_friend", "density_impact"
 )
 .var <- paste0(.var, rep(c("_mean", "_sd"), each = length(.var)))
 
@@ -48,7 +48,7 @@ dat_agg <- dat %>% group_by(id_class_teacher) %>%
 
 # set parameters
 
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 
 # function for nicer output
 html_table <- function(table, title = "", footnote = "") {

@@ -28,14 +28,13 @@ dat <- dat %>% mutate(
   Friend_in = Friend_in / (n_valid_like -1),
   soc_relatedness = (LL_in + LM_in) / 2,
   soc_positivity = ((LM_in - LL_in) + 1) / 2
-  
-  
-)
+) %>%
+  filter(!is.na(grade))
 
 .var <- c(
   "feess_kk", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", 
   "sar_perpetrator", "itrf_int", "itrf_ext", "itrf_sw", "itrf_ad", "itrf_apd", 
-  "itrf_opp", "itrf_int", "itrf_ext", "n_valid_like", "soc_relatedness", "soc_positivity"
+  "itrf_opp", "itrf_int", "itrf_ext", "n_valid_like", "soc_relatedness", "soc_positivity", "density_ll", "density_lm", "density_friend", "density_impact"
 )
 
 dat_mean <- dat %>% group_by(id_class_teacher) %>%
