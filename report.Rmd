@@ -39,7 +39,7 @@ dat <- readRDS("data.rds")
 .var <- c(
   "feess_kk", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", 
   "sar_perpetrator", "itrf_int", "itrf_ext", "itrf_sw", "itrf_ad", "itrf_apd", 
-  "itrf_opp", "itrf_int", "itrf_ext", "n_valid_like"
+  "itrf_opp", "itrf_int", "itrf_ext", "soc_relatedness", "soc_positivity", "n_valid_like"
 )
 .var <- paste0(.var, rep(c("_mean", "_sd"), each = length(.var)))
 
@@ -76,7 +76,7 @@ wmisc::reference_package_version(packages)
 
 ```{r descriptives_l1}
 .var <- c(
-  "feess_kk", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", 
+  "feess_kk", "feess_si", "soc_relatedness", "soc_positivity", "LM_in", "LL_in","Friend_in", "sar_victim", 
   "sar_perpetrator", "itrf_int", "itrf_ext", "itrf_sw", "itrf_ad", "itrf_apd", "itrf_opp", "itrf_int", "itrf_ext", "age"
 )
 
@@ -99,25 +99,47 @@ dat_agg %>%
   wmisc::nice_corrmatrix(lower = FALSE) %>% html_table
 ```
 
+# Exploring the problems with sociometric data
+
+```{r}
+dat %>% group_by(grade) %>%
+  summarise(
+    across(c("LL_in", "LM_in", "Friend_in", "soc_relatedness", "soc_positivity"), list(mean = ~mean(.x, na.rm = TRUE))),
+  n = n()) %>% round(2) %>%
+  html_table()
+
+
+```
+
 
 # Exploratory factor analyses
 
 ```{r efa_l1}
-var <- c("feess_kk", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", "sar_perpetrator")
+var <- c("feess_kk", "feess_si", "soc_relatedness", "soc_positivity", "Friend_in", "sar_victim", "sar_perpetrator")
 
 dat %>% select(!!var) %>% fa.parallel()
 
-dat %>% select(!!var) %>% exploratory_fa(nfactors = 3) %>% html_table()
+dat %>% select(!!var) %>% exploratory_fa(nfactors = 4) %>% html_table()
 
 ```
 
+
+
 ```{r efa_l2}
-var <- c("feess_kk", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", "sar_perpetrator")
+var <- c("feess_kk", "feess_si", "soc_relatedness", "soc_positivity","Friend_in", "sar_victim", "sar_perpetrator")
 var <- paste0(var, "_mean")
 
 dat_agg %>% select(!!var) %>% fa.parallel()
 
-dat_agg %>% select(!!var) %>% exploratory_fa(nfactors = 3) %>% html_table()
+dat_agg %>% select(!!var) %>% exploratory_fa(nfactors = 3, fm = "ml") %>% html_table()
+
+```
+
+```{r efa_l2_zmp}
+var <- c("feess_kk", "feess_si", "LM_in","Friend_in", "sar_victim", "sar_perpetrator")
+var <- paste0(var, "_mean")
+#dat_agg %>% select(!!var) %>% fa.parallel()
+dat_agg %>% select(!!var) %>% exploratory_fa(nfactors = 3, fm = "ml") %>% html_table()
 
 ```
 

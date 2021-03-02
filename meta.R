@@ -23,16 +23,19 @@ dat$feess_si  <- dat$FEESS34_SI / 3
 dat$feess_si[is.na(dat$feess_si)] <- dat$FEESS12_SI[is.na(dat$feess_si)]
 
 dat <- dat %>% mutate(
-  LM_in = LM_in / n_valid_like,
-  LL_in = LL_in / n_valid_like,
-  Friend_in = Friend_in / n_valid_like,
+  LM_in = LM_in / (n_valid_like -1),
+  LL_in = LL_in / (n_valid_like -1),
+  Friend_in = Friend_in / (n_valid_like -1),
+  soc_relatedness = (LL_in + LM_in) / 2,
+  soc_positivity = ((LM_in - LL_in) + 1) / 2
+  
   
 )
 
 .var <- c(
   "feess_kk", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", 
   "sar_perpetrator", "itrf_int", "itrf_ext", "itrf_sw", "itrf_ad", "itrf_apd", 
-  "itrf_opp", "itrf_int", "itrf_ext", "n_valid_like"
+  "itrf_opp", "itrf_int", "itrf_ext", "n_valid_like", "soc_relatedness", "soc_positivity"
 )
 
 dat_mean <- dat %>% group_by(id_class_teacher) %>%
