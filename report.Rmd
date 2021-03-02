@@ -1,0 +1,99 @@
+---
+title: "Classclimate and school related behavioral problems"
+author: "Jürgen Wilbert"
+date: "Version (`r Sys.Date()`)"
+
+output:
+  html_document:
+    theme: default
+    df_print: paged
+    toc: TRUE
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+bibliography: packages.bib
+geometry: a4paper
+link-citations: yes
+biblio-style: apalike
+---
+
+```{r setup, include=FALSE}
+source("start.R")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Software acknowledgement
+
+The following packages were used for this report:  
+
+`R` at version `r R.version$version.string` [@R-base]. 
+
+```{r package_reference, results="asis", echo=FALSE}
+wmisc::reference_package_version(packages)
+```
+
+---
+
+
+# Scales
+
+```{r scales}
+list_scales(dat, labels = TRUE)
+```
+
+
+```{r exploratory factor analysis}
+#  c("itrf_int", "itrf_ext", "FEESS12_GA", "FEESS12_KK", "FEESS12_SI","FEESS34_KK", "FEESS34_SI", "ELFE_WV", "ELFE_SV", "ELFE_TV", "age","LM_in", "LL_in","Friend_in","migration_background", "sex", "grade", "id_class_teacher")
+
+c("itrf_int", "itrf_ext", "FEESS12_GA", "FEESS12_KK", "FEESS12_SI","FEESS34_KK", "FEESS34_SI", "ELFE_WV", "ELFE_SV", "ELFE_TV", "age","LM_in", "LL_in","Friend_in","migration_background", "sex", "grade", "id_class_teacher")
+
+```
+
+
+```{r}
+model <- "
+    classclimate =~ mean_feess_si + mean_feess_kk + mean_LM_in + mean_LL_in + mean_Friend_in + mean_sar_perpetrator + mean_sar_victim
+"
+
+model <- "
+    mean_feess_kk ~ mean_feess_si +  + mean_LM_in + mean_LL_in + mean_Friend_in + mean_sar_perpetrator + mean_sar_victim
+"
+
+fit <- sem(model, dat_mean, std.lv = TRUE)
+
+
+tidy(fit)
+glance(fit)
+summary(fit, fit.measures = TRUE)
+
+```
+
+
+
+```{r confirmatory_fa, comment = ""}
+
+scales <- list(
+  sar = c("SAR_O", "SAR_V"),
+  itrf = c("itrf_sw", "itrf_ad", "itrf_apd", "itrf_opp")
+  
+)
+  
+.tmp <-  c("itrf_int", "itrf_ext", "FEESS12_GA", "FEESS12_KK", "FEESS12_SI","FEESS34_KK", "FEESS34_SI", "ELFE_WV", "ELFE_SV", "ELFE_TV", "age","LM_in", "LL_in","Friend_in","migration_background", "sex", "grade", "id_class_teacher")
+
+.vars <- c("FEESS34_KK", "FEESS34_SI", "LM_in", "LL_in","Friend_in", "SAR_O", "SAR_V")
+
+dat %>% select(all_of(.vars)) %>% fa()
+
+model <- "
+  level: 1
+    wellbeing =~ feess_si + LM_in + LL_in + Friend_in + SAR_V + SAR_O
+  level: 2
+    classclimate =~ feess_si + LM_in + LL_in + Friend_in + SAR_V + SAR_O
+"
+
+
+fit <- sem(model, dat, std.lv = TRUE, cluster = "id_class_teacher")
+summary(fit, fit.measures = TRUE)
+```
+
+
