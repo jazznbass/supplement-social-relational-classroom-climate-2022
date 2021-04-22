@@ -1,11 +1,14 @@
+###################################
+# Project:  class_climate         #
+# Function: import /prepare data  #
+# Author: Juergen Wilbert         #
+# Date:Sun Mar  7 11:15:39 2021   #
+###################################
 
-
-# render ------------------------------------------------------------------
-
-rmarkdown::render("report.Rmd", output_file = "index.html", output_dir = "docs")
-
-
-# import original datafile ------------------------------------------------
+## This code contains the import and preparation of the data 
+## used for the analyses in this project.
+## This code is for documentation and transparency and 
+## can only be executed by the author.
 
 dir <- getwd()
 source(file.path(DIR$PROJECT$MM20, "mm20_control_file.R"))
@@ -31,6 +34,8 @@ dat <- dat %>% mutate(
 ) %>%
   filter(!is.na(grade))
 
+class(dat$age) <- c("dic", "numeric")
+
 .var <- c(
   "feess_kk", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", 
   "sar_perpetrator", "itrf_int", "itrf_ext", "itrf_sw", "itrf_ad", "itrf_apd", 
@@ -40,9 +45,9 @@ dat <- dat %>% mutate(
 dat_mean <- dat %>% group_by(id_class_teacher) %>%
   summarise(
     across(all_of(.var), list(
-        mean = ~mean(.x, na.rm = TRUE),
-        sd = ~sd(.x, na.rm = TRUE)
-      )
+      mean = ~mean(.x, na.rm = TRUE),
+      sd = ~sd(.x, na.rm = TRUE)
+    )
     )
   )
 

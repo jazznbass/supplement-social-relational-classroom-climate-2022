@@ -13,4 +13,14 @@ fit <- sem(model, dat_mean, std.lv = TRUE)
 
 summary(fit, fit.measures = TRUE)
 
+# Exploring the problems with sociometric data
 
+```{r}
+dat %>% group_by(grade) %>%
+  summarise(
+    across(c("LL_in", "LM_in", "Friend_in", "soc_relatedness", "soc_positivity"), list(mean = ~mean(.x, na.rm = TRUE))),
+    n = n()) %>% round(2) %>%
+  html_table()
+
+
+```

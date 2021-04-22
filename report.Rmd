@@ -1,16 +1,18 @@
 ---
-title: "Analyses: Classclimate 2020"
+title: "Analyses: Entangling social-emotional classclimate and its relation to students behavioral problems"
 author: "Jürgen Wilbert"
 date: "Version (`r Sys.Date()`)"
-
 output:
   html_document:
-    theme: default
+    theme: cosmo
     df_print: paged
     toc: TRUE
     toc_depth: 2
     toc_float:
       collapsed: false
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
 bibliography: packages.bib
 geometry: a4paper
 link-citations: yes
@@ -25,16 +27,17 @@ if (!("wmisc" %in% installed.packages()))
 if (!("scaledic" %in% installed.packages())) 
   devtools::install_github("jazznbass/scaledic")
 
-packages <- c('sjPlot', 'knitr', 'semTable', 'kableExtra', 'bookdown', 
-              'scaledic', 'Amelia', 'wmisc', 'psych', 'lavaan', 'nlme', 'lme4',
-              'tidyverse', 'readxl', 'gridExtra', 'broom')
+packages <- c(
+  'sjPlot', 'knitr', 'semTable', 'kableExtra', 'bookdown', 
+  'scaledic', 'Amelia', 'wmisc', 'psych', 'lavaan', 'nlme', 'lme4',
+  'tidyverse', 'readxl', 'gridExtra', 'broom', 'sjPlot'
+)
 
 invisible(sapply(packages, library, character.only = TRUE))
 
 # load data
 
 dat <- readRDS("data.rds")
-
 
 .var <- c(
   "feess_kk", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", 
@@ -46,18 +49,35 @@ dat <- readRDS("data.rds")
 dat_agg <- dat %>% group_by(id_class_teacher) %>%
   summarise(across(!!.var, mean))
 
+# Define variables: classclimate/wellbeing/behavioral problems/control for all analyzes
+var_cc_l1 <- c("feess_kk", "feess_si", "LM_in","Friend_in", "sar_victim", "sar_perpetrator")
+var_cc_l2 <- paste0(var_cc_l1, "_mean")
+var_cc_l2_sd <- paste0(var_cc_l1, "_sd")
+
+var_bp_l1 <- c("itrf_sw", "itrf_ad", "itrf_apd", "itrf_opp")
+var_bp_l2 <- paste0(var_bp_l1, "_mean")
+var_bp_l2_sd <- paste0(var_bp_l1, "_sd")
+
+var_cont_l1 <- c("age", "grade", "sex", "migration_background")
+var_cont_l2 <- paste0(var_cont_l1, "_mean")
+var_cont_l2_sd <- paste0(var_cont_l1, "_sd")
+
 # set parameters
 
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 
 # function for nicer output
 html_table <- function(table, title = "", footnote = "") {
-  
   title <- paste0("Table.<br><i>", title, "</i>")
   kable(table, caption = title) %>%
-   kable_classic() %>%
+   kable_classic(full_width = FALSE) %>%
    footnote(footnote)
 }
+
+html_regression <- function(fit, ...) {
+  sjPlot::tab_model(fit, show.std = TRUE, show.se = TRUE, show.ci = FALSE, ...)
+}
+
 ```
 
 # Software acknowledgment
@@ -72,13 +92,20 @@ wmisc::reference_package_version(packages)
 
 ------------------------------------------------------------------------
 
-# Descriptives
+# Research questions
+
+Frage 1a: Lassen sich die von uns aufgestellten Komponenten des social wellbeings in einem Konstrukt abbilden.
+
+
+Frage 1b: Lassen sich die von uns aufgestellten Komponenten des aggregierten social-wellbeings in einem Konstrukt social-emotional class climate abbilden.
+
+
+Frage 2: Wie stark lassen sich Unterschiede in Verhaltensproblemen (in 4 Dimensionen unterteilt) durch das social-emotional wellbing + das social-emotional classclimate erklären.
+
+# Descriptives of all variables
 
 ```{r descriptives_l1}
-.var <- c(
-  "feess_kk", "feess_si", "soc_relatedness", "soc_positivity", "LM_in", "LL_in","Friend_in", "sar_victim", 
-  "sar_perpetrator", "itrf_int", "itrf_ext", "itrf_sw", "itrf_ad", "itrf_apd", "itrf_opp", "itrf_int", "itrf_ext", "age"
-)
+.var <- c(var_cc_l1, var_bp_l1, "age")
 
 # correct wrong class in age (is: time; should be: numeric)
 class(dat$age) <- c("dic", "numeric")
@@ -89,59 +116,126 @@ dat %>% group_by(grade) %>% summarise(n = n()) %>% html_table
 dat %>% group_by(sex) %>% summarise(n = n()) %>% html_table
 dat %>% group_by(migration_background) %>% summarise(n = n()) %>% html_table
 
-dat %>% select(!!.var) %>% wmisc::nice_corrmatrix(lower = FALSE) %>% html_table
+dat %>% select(!!.var) %>% wmisc::nice_corrmatrix(upper = FALSE, numbered_columns = TRUE, char_p10 = "T") %>% html_table
 ```
 
 ```{r descriptives_l2}
-descriptives(dat_agg[-1]) %>% html_table
+.var <- c(var_cc_l2, var_bp_l2)
+descriptives(dat_agg[.var]) %>% html_table
 dat_agg %>% 
-  select(ends_with("_mean")) %>%
-  wmisc::nice_corrmatrix(lower = FALSE) %>% html_table
+  select(!!.var) %>%
+  wmisc::nice_corrmatrix(upper = FALSE, numbered_columns = TRUE, char_p10 = "T") %>% html_table
 ```
 
-# Exploring the problems with sociometric data
+# Research question 1: Lassen sich die von uns aufgestellten Komponenten des social wellbeings in einem Konstrukt abbilden.
 
-```{r}
-dat %>% group_by(grade) %>%
-  summarise(
-    across(c("LL_in", "LM_in", "Friend_in", "soc_relatedness", "soc_positivity"), list(mean = ~mean(.x, na.rm = TRUE))),
-  n = n()) %>% round(2) %>%
-  html_table()
+# Social wellbeing (individual level)
 
+We conducted a parallel analysis to determine the number of factors to be extracted from the data.
+The analysis point to three factors (see figure xxx)
 
+```{r parallel_l1, fig.cap="Parallel analysis scree plot."}
+dat %>% select(!!var_cc_l1) %>% fa.parallel(main = "", fa = "fa")
 ```
 
+While an empirical BIC as well as a Sample Size adjusted BIC achieve a minimum with 2  factors.
 
-# Exploratory factor analyses
+
+```{r nfactor_l1}
+res <- dat %>% select(!!var_cc_l1) %>% nfactors(n = 5)
+```
 
 ```{r efa_l1}
-var <- c("feess_kk", "feess_si", "soc_relatedness", "soc_positivity", "Friend_in", "sar_victim", "sar_perpetrator")
 
-dat %>% select(!!var) %>% fa.parallel()
-
-dat %>% select(!!var) %>% exploratory_fa(nfactors = 4) %>% html_table()
+dat %>% select(!!var_cc_l1) %>% exploratory_fa(nfactors = 3, fm = "minres") %>% html_table("Exploratory factor analyzes of wellbeing variables.")
 
 ```
 
+# Research question 1b_: Lassen sich die von uns aufgestellten Komponenten des aggregierten social-wellbeings in einem Konstrukt social-emotional class climate abbilden.
 
+# Class climate (class level)
+
+We conducted a parallel analysis to determine the number of factors to be extracted from the data.
+The analysis point to two factors (see figure xxx).
+
+```{r nfactors_l2, , fig.cap="Parallel analysis scree plot."}
+dat_agg %>% select(!!var_cc_l2) %>% fa.parallel(main = "", fa = "fa")
+```
+
+```{r}
+dat_agg %>% select(!!var_cc_l2) %>% nfactors(n = 6)
+```
 
 ```{r efa_l2}
-var <- c("feess_kk", "feess_si", "soc_relatedness", "soc_positivity","Friend_in", "sar_victim", "sar_perpetrator")
-var <- paste0(var, "_mean")
-
-dat_agg %>% select(!!var) %>% fa.parallel()
-
-dat_agg %>% select(!!var) %>% exploratory_fa(nfactors = 3, fm = "ml") %>% html_table()
-
+dat_agg %>% 
+  select(!!var_cc_l2) %>% exploratory_fa(nfactors = 3, fm = "ml") %>%
+  html_table("Exploratory factor analyzes of classclimate variables.")
 ```
 
-```{r efa_l2_zmp}
-var <- c("feess_kk", "feess_si", "LM_in","Friend_in", "sar_victim", "sar_perpetrator")
-var <- paste0(var, "_mean")
-#dat_agg %>% select(!!var) %>% fa.parallel()
-dat_agg %>% select(!!var) %>% exploratory_fa(nfactors = 3, fm = "ml") %>% html_table()
+# Reseach question 2: Wie stark lassen sich Unterschiede in Verhaltensproblemen (in 4 Dimensionen unterteilt) durch das social-emotional wellbing + das social-emotional classclimate erklären.
 
+```{r}
+fit <- lme(itrf_sw ~ feess_si + LM_in + Friend_in + sar_victim + sar_perpetrator, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
+html_regression(fit, title = "Social withdrawal regressed on wellbing variables")
 ```
 
+```{r}
+fit <- lme(itrf_ad ~ feess_si + LM_in + Friend_in + sar_victim + sar_perpetrator, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
+html_regression(fit, title = "Anxiety/depression regressed on wellbing variables")
+```
+
+```{r}
+fit <- lme(itrf_apd ~ feess_si + LM_in + Friend_in + sar_victim + sar_perpetrator, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
+html_regression(fit, title = "Academic disorganized behavior regressed on wellbing variables")
+```
+
+```{r}
+fit <- lme(itrf_opp ~ feess_si + LM_in + Friend_in + sar_victim + sar_perpetrator, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
+html_regression(fit, title = "Opositional behavior regressed on wellbing variables")
+```
+
+# Reseach question 2b: Wie stark lassen sich Unterschiede in Verhaltensproblemen in einer Klasse (in 4 Dimensionen unterteilt) durch das classenclima erklären.
+
+```{r}
+fit <- lm(itrf_sw_mean ~ feess_si_mean + LM_in_mean + Friend_in_mean + sar_victim_mean + sar_perpetrator_mean, data = dat_agg, na.action = na.omit)
+html_regression(fit, title = "Social withdrawal regressed on classclimate")
+```
+
+```{r}
+fit <- lm(itrf_ad_mean ~ feess_si_mean + LM_in_mean + Friend_in_mean + sar_victim_mean + sar_perpetrator_mean, data = dat_agg, na.action = na.omit)
+html_regression(fit, title = "Anxiety/depression regressed on classclimate")
+```
+
+```{r}
+fit <- lm(itrf_apd_mean ~ feess_si_mean + LM_in_mean + Friend_in_mean + sar_victim_mean + sar_perpetrator_mean, data = dat_agg, na.action = na.omit)
+html_regression(fit, title = "Academic disorganized behavior regressed on classclimate")
+```
+
+```{r}
+fit <- lm(itrf_opp_mean ~ feess_si_mean + LM_in_mean + Friend_in_mean + sar_victim_mean + sar_perpetrator_mean, data = dat_agg, na.action = na.omit)
+html_regression(fit, title = "Opositional behavior regressed on wellbing variables")
+```
+
+# Reseach question 3: Explaining indidual behavioral problems by means of classclimate
+
+```{r}
+fit <- lme(itrf_sw ~ feess_si + LM_in + Friend_in + sar_victim + sar_perpetrator + feess_si_mean + LM_in_mean + Friend_in_mean + sar_victim_mean + sar_perpetrator_mean, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
+html_regression(fit, title = "Social withdrawal regressed on wellbing and classclimate variables")
+```
+
+```{r}
+fit <- lme(itrf_ad ~ feess_si + LM_in + Friend_in + sar_victim + sar_perpetrator + feess_si_mean + LM_in_mean + Friend_in_mean + sar_victim_mean + sar_perpetrator_mean, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
+html_regression(fit, title = "Anxiety/Depression regressed on wellbing and classclimate variables")
+```
+
+```{r}
+fit <- lme(itrf_apd ~ feess_si + LM_in + Friend_in + sar_victim + sar_perpetrator + feess_si_mean + LM_in_mean + Friend_in_mean + sar_victim_mean + sar_perpetrator_mean, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
+html_regression(fit, title = "Academic disengagement regressed on wellbing and classclimate variables")
+```
+
+```{r}
+fit <- lme(itrf_opp ~ feess_si + LM_in + Friend_in + sar_victim + sar_perpetrator + feess_si_mean + LM_in_mean + Friend_in_mean + sar_victim_mean + sar_perpetrator_mean, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
+html_regression(fit, title = "Oppositional behavior regressed on wellbing and classclimate variables")
+```
 
 # Reference
