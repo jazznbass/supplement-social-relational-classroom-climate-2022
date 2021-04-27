@@ -93,7 +93,7 @@ Frage 2: Wie stark lassen sich Unterschiede in Verhaltensproblemen (in 4 Dimensi
 ```{r descriptives_l1}
 .var <- c(var_cc_l1, var_bp_l1, "age", "sex_male", "migration_background_numeric")
 
-dat %>% select(!!.var) %>% descriptives() %>% html_table
+dat %>% select(!!.var) %>% rename_item() %>% descriptives() %>% html_table
 
 dat %>% group_by(grade) %>% summarise(n = n()) %>% html_table
 dat %>% group_by(sex) %>% summarise(n = n()) %>% html_table
