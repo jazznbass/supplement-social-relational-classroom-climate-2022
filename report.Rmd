@@ -417,18 +417,20 @@ dat2 %>% group_by(profile) %>%
 ```{r}
 dat2 <- dat_agg %>%
   select(!!var_cc_l2) %>%
+  rename_item() %>%
   na.omit() %>%
   mutate(across(everything(), scale))
 
 fit_bic <- readRDS("fit_bic_l2.rds")
 
-mod1 <- Mclust(dat2, modelNames = "EVE", G = 2, x = fit_bic)
+mod1 <- Mclust(dat2, modelNames = "EVE", G = 3, x = fit_bic)
 
 dat2 <- dat_agg
 dat2$filter <- apply(dat2[,var_cc_l2], 1, function(x) any(is.na(x)))
 
 dat2 <- dat2 %>% filter(!filter)
-dat2$profile <- factor(mod1$classification, labels = c("Incl. (0), bullying (-) 87%","Feel. inc. (-), bullying (+) 13%"))
+dat2$profile <- factor(mod1$classification, labels = c("Average inclusion, lower bullying 70%","Intense bullying 20%", "High social inclusion 10%"))
+
 
 dat2 <- dat2 %>% mutate(across(!!c(var_bp_l2, var_cc_l2), scale))
 
@@ -436,7 +438,8 @@ dat2 %>% group_by(profile) %>%
   summarise(across(!!var_bp_l2, mean, na.rm = TRUE)) %>%
   pivot_longer(col = -1) %>%
   ggplot(aes(x = profile, y = value, fill = name)) +
-  geom_bar(stat = "identity",position = "dodge" )
+  geom_bar(stat = "identity",position = "dodge" )  +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 
