@@ -82,11 +82,24 @@ wmisc::reference_package_version(packages)
 
 # Research questions
 
-Frage 1a: Lassen sich die von uns aufgestellten Komponenten des social wellbeings in einem Konstrukt abbilden.
+Q1a: Is it possible to aggregate the various components of social-emotional wellbeing into one distinct general factor?
 
-Frage 1b: Lassen sich die von uns aufgestellten Komponenten des aggregierten social-wellbeings in einem Konstrukt social-emotional class climate abbilden.
+Q1b: Is it possible to construe a general social-emotional classclimate factor from the average (individual) wellbeing variables within a class?
 
-Frage 2: Wie stark lassen sich Unterschiede in Verhaltensproblemen (in 4 Dimensionen unterteilt) durch das social-emotional wellbing + das social-emotional classclimate erklären.
+Q2a: To what extend can behavioral problems in a class be explained by means of components of social-emotional wellbeing?
+
+Q2b: To what extend can the average amount of behavioral problems in a class be explained by components of social-emotional classclimate? 
+
+Q2c: To what extend does the social-emotional classclimate contribute to individual behavioral problems?
+
+Q3a: Can we find profiles of components of social-emotional wellbeing?
+
+Q3b: Can we find profiles of components of social-emotional classclimate?
+
+Q3c: What is the nexus between the profiles of social-emotional wellbeing and behavioral problems?
+
+Q3c: What is the nexus between the profiles of social-emotional classclimate and behavioral problems?
+
 
 # Descriptives of all variables
 
@@ -115,9 +128,7 @@ dat_agg %>%
   wmisc::nice_corrmatrix(upper = FALSE, numbered_columns = TRUE, char_p10 = "T") %>% html_table
 ```
 
-# Research question 1: Lassen sich die von uns aufgestellten Komponenten des social wellbeings in einem Konstrukt abbilden.
-
-# Social wellbeing (individual level)
+# Q1a: Is it possible to aggregate the various components of social-emotional wellbeing into one distinct general factor?
 
 We conducted a parallel analysis to determine the number of factors to be extracted from the data. The analysis point to three factors (see figure xxx)
 
@@ -140,9 +151,7 @@ dat %>%
 
 ```
 
-# Research question 1b\_: Lassen sich die von uns aufgestellten Komponenten des aggregierten social-wellbeings in einem Konstrukt social-emotional class climate abbilden.
-
-# Class climate (class level)
+# Q1b: Is it possible to construe a general social-emotional classclimate factor from the average (individual) wellbeing variables within a class?
 
 We conducted a parallel analysis to determine the number of factors to be extracted from the data. The analysis point to two factors (see figure xxx).
 
@@ -164,7 +173,7 @@ dat_agg %>%
   html_table("Exploratory factor analyzes of classclimate variables.")
 ```
 
-# Reseach question 2: Wie stark lassen sich Unterschiede in Verhaltensproblemen (in 4 Dimensionen unterteilt) durch das social-emotional wellbing + das social-emotional classclimate erklären.
+# Q2a: To what extend can behavioral problems in a class be explained by means of components of social-emotional wellbeing?
 
 ```{r}
 fit <- lme(itrf_sw ~ feess_si + soc_positivity + soc_relatedness + sar_victim + sar_perpetrator + age + migration_background + sex, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
@@ -186,7 +195,8 @@ fit <- lme(itrf_opp ~ feess_si + soc_positivity  + soc_relatedness + sar_victim 
 html_regression(fit, title = "Oppositional behavior regressed on wellbing variables")
 ```
 
-# Reseach question 2b: Wie stark lassen sich Unterschiede in Verhaltensproblemen in einer Klasse (in 4 Dimensionen unterteilt) durch das classenclima erklären.
+# Q2b: To what extend can the average amount of behavioral problems in a class be explained by components of social-emotional classclimate? 
+
 
 ```{r}
 fit <- lm(itrf_sw_mean ~ feess_si_mean + soc_positivity_mean + soc_relatedness_mean   + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean, data = dat_agg, na.action = na.omit)
@@ -208,7 +218,7 @@ fit <- lm(itrf_opp_mean ~ feess_si_mean + soc_positivity_mean + soc_relatedness_
 html_regression(fit, title = "Opositional behavior regressed on wellbing variables")
 ```
 
-# Reseach question 3: Explaining indidual behavioral problems by means of classclimate
+# Q2c: To what extend does the social-emotional classclimate contribute to individual behavioral problems?
 
 ```{r}
 dat_l12 <- full_join(dat, dat_agg, by = "id_class_teacher")
@@ -235,14 +245,8 @@ fit <- lme(itrf_opp ~ feess_si + soc_relatedness + soc_positivity + sar_victim +
 html_regression(fit, title = "Oppositional behavior regressed on wellbing and classclimate variables")
 ```
 
-# Explorative: Latent profile annalyses
 
-Are there patterns of
-
-a.  Wellbeing?
-b.  Classclimate?
-
-## Profiles of wellbeeing
+# Q3a: Can we find profiles of components of social-emotional wellbeing?
 
 ```{r}
 dat2 <- dat %>%
@@ -323,9 +327,7 @@ p
 
 ```
 
-
-
-## Profiles of classclimate
+# Q3b: Can we find profiles of components of social-emotional classclimate?
 
 ```{r}
 dat2 <- dat_agg %>%
@@ -372,9 +374,7 @@ p
 
 ```
 
-## Profile and behavioral problems
-
-### Social-emotional wellbeeing
+# Q3c: What is the nexus between the profiles of social-emotional wellbeing and behavioral problems?
 
 ```{r}
 dat2 <- dat %>%
@@ -411,8 +411,7 @@ dat2 %>% group_by(profile) %>%
 
 ```
 
-
-### Classclimate
+# Q3d: What is the nexus between the profiles of social-emotional classclimate and behavioral problems?
 
 ```{r}
 dat2 <- dat_agg %>%
