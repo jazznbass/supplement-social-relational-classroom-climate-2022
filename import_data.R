@@ -45,6 +45,9 @@ dat$feess_kk[is.na(dat$feess_kk)] <- dat$FEESS12_KK[is.na(dat$feess_kk)]
 dat$feess_si  <- dat$FEESS34_SI / 3
 dat$feess_si[is.na(dat$feess_si)] <- dat$FEESS12_SI[is.na(dat$feess_si)]
 
+dat$feess_ga  <- dat$FEESS34_GA / 3
+dat$feess_ga[is.na(dat$feess_ga)] <- dat$FEESS12_SI[is.na(dat$feess_ga)]
+
 # further preparations
 dat <- dat %>% mutate(
   id_class_teacher = anonymise(id_class_teacher), # turn ids to numbers
@@ -75,7 +78,7 @@ class(dat$age) <- c("dic", "numeric")
 ## add level 2 variables (means and sd)
 
 .var <- c(
-  "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim",
+  "feess_ga", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim",
   "sar_perpetrator", "itrf_sw", "itrf_ad", "itrf_apd", 
   "itrf_opp", "n_valid_like", "soc_relatedness",     
   "soc_positivity", "age", "sex_male", "migration_background_numeric"
@@ -97,8 +100,8 @@ dat_mean <- dat %>% group_by(id_class_teacher) %>%
 
 var_control <- c("id_class_teacher", "age", "migration_background", "sex", "sex_male", "migration_background_numeric", "grade")
 var <- c(
-  "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", 
-  "sar_perpetrator", "itrf_sw", "itrf_ad", "itrf_apd", "itrf_opp", "n_valid_like", 
+  "feess_ga", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim", 
+  "sar_perpetrator", "itrf_sw", "itrf_ad", "itrf_apd", "itrf_opp", "n_valid_like",
   "soc_relatedness", "soc_positivity"
 )
 
@@ -117,6 +120,7 @@ dat_mean <- dat_mean %>%
     sar_perpetrator_mean = dic(sar_perpetrator_mean, item_label = "Average bullying perpetrator"),
     sar_victim_mean = dic(sar_victim_mean, item_label = "Average bullying victim"),
     feess_si_mean = dic(feess_si_mean, item_label = "Average feeling of social inclusion"),
+    feess_ga_mean = dic(feess_ga_mean, item_label = "Average feeling of social acceptance by the teacher"),
     age_mean = dic(age_mean, item_label = "Average age"),
     itrf_sw_mean = dic(itrf_sw_mean, item_label = "Average social withdrawal"),
     itrf_apd_mean = dic(itrf_apd_mean, item_label = "Average academically disorganized"),
@@ -130,3 +134,4 @@ setwd(dir)
 
 saveRDS(dat, "data_l1.rds")
 saveRDS(dat_mean, "data_l2.rds")
+
