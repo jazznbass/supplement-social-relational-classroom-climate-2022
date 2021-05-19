@@ -1,5 +1,5 @@
 ---
-title: "Analyses: Entangling social-emotional classclimate and its relation to students behavioral problems"
+title: "Analyses: Entangling social-relational classroom climate and its relation to students' behavioral problems"
 author: "Jürgen Wilbert"
 date: "Version (`r Sys.Date()`)"
 output:
@@ -82,23 +82,26 @@ wmisc::reference_package_version(packages)
 
 # Research questions
 
-Q1a: Is it possible to aggregate the various components of social-emotional wellbeing into one distinct general factor?
+Q1: Is there a general factor that could be derived from various aspects of students peer-relations within the classroom? 
 
-Q1b: Is it possible to construe a general social-emotional classclimate factor from the average (individual) wellbeing variables within a class?
+Q1a: On an individual level: Is it possible to conflate various aspects of students peer-relations within the classroom into one distinct general factor (social-relational situation)?
 
-Q2a: To what extend can behavioral problems in a class be explained by means of components of social-emotional wellbeing?
+Q1b: On a classroom level: Is it possible to conflate the classroom means of various aspects of students peer-relations into on distinct general factor (social-relational classroom climate)?
 
-Q2b: To what extend can the average amount of behavioral problems in a class be explained by components of social-emotional classclimate? 
+Q2: What is the connection between students behavioral problems and various aspects of their peer-relations?
 
-Q2c: To what extend does the social-emotional classclimate contribute to individual behavioral problems?
+Q2a: On an individual level: To what extend can students behavioral problems in a class be explained by means of various aspects of their peer-relations?
 
-Q3a: Can we find profiles of components of social-emotional wellbeing?
+Q2b: On a classroom level: To what extend can the average amount of behavioral problems in a classroom be explained by classroom means of various aspects of  students peer-relations? 
 
-Q3b: Can we find profiles of components of social-emotional classclimate?
+Q2c: To what extend do classroom means of various aspects of  students peer-relations contribute to individual behavioral classroom problems?
 
-Q3c: What is the nexus between the profiles of social-emotional wellbeing and behavioral problems?
+Add on questions(probably they will be dropped later :-) )
 
-Q3c: What is the nexus between the profiles of social-emotional classclimate and behavioral problems?
+> Q3a: Can we find profiles of components of social-emotional wellbeing?
+> Q3b: Can we find profiles of components of social-emotional classclimate?
+> Q3c: What is the nexus between the profiles of social-emotional wellbeing and behavioral problems?
+> Q3c: What is the nexus between the profiles of social-emotional classclimate and behavioral problems?
 
 
 # Descriptives of all variables
@@ -106,29 +109,30 @@ Q3c: What is the nexus between the profiles of social-emotional classclimate and
 ```{r descriptives_l1}
 .var <- c(var_cc_l1, var_bp_l1, "age", "sex_male", "migration_background_numeric")
 
-dat %>% select(!!.var) %>% rename_item() %>% descriptives() %>% html_table
+dat %>% select(!!.var) %>% rename_items() %>% descriptives() %>% html_table
 
 dat %>% group_by(grade) %>% summarise(n = n()) %>% html_table
 dat %>% group_by(sex) %>% summarise(n = n()) %>% html_table
 dat %>% group_by(migration_background) %>% summarise(n = n()) %>% html_table
 
-dat %>% select(!!.var) %>% rename_item() %>% wmisc::nice_corrmatrix(upper = FALSE, numbered_columns = TRUE, char_p10 = "T") %>% html_table
+dat %>% select(!!.var) %>% rename_items() %>% wmisc::nice_corrmatrix(upper = FALSE, numbered_columns = TRUE, char_p10 = "T") %>% html_table
 ```
 
 ```{r descriptives_l2}
 .var <- c(var_cc_l2, var_bp_l2, "age_mean", "sex_male_mean", "migration_background_numeric_mean")
 dat_agg %>% 
   select(!!.var) %>% 
-  rename_item() %>% 
+  rename_items() %>% 
   descriptives() %>% 
   html_table()
 
 dat_agg %>% 
-  select(!!.var) %>% rename_item() %>% 
+  select(!!.var) %>% rename_items() %>% 
   wmisc::nice_corrmatrix(upper = FALSE, numbered_columns = TRUE, char_p10 = "T") %>% html_table
 ```
 
-# Q1a: Is it possible to aggregate the various components of social-emotional wellbeing into one distinct general factor?
+
+# Q1a
 
 We conducted a parallel analysis to determine the number of factors to be extracted from the data. The analysis point to three factors (see figure xxx)
 
@@ -145,13 +149,13 @@ res <- dat %>% select(!!var_cc_l1) %>% nfactors(n = 5)
 
 dat %>% 
   select(!!var_cc_l1) %>% 
-  rename_item() %>% 
+  rename_items() %>% 
   exploratory_fa(nfactors = 3, fm = "minres") %>% 
   html_table("Exploratory factor analyzes of wellbeing variables.")
 
 ```
 
-# Q1b: Is it possible to construe a general social-emotional classclimate factor from the average (individual) wellbeing variables within a class?
+# Q1b
 
 We conducted a parallel analysis to determine the number of factors to be extracted from the data. The analysis point to two factors (see figure xxx).
 
@@ -168,12 +172,12 @@ dat_agg %>% select(!!var_cc_l2) %>% nfactors(n = 6)
 ```{r efa_l2}
 dat_agg %>% 
   select(!!var_cc_l2) %>% 
-  rename_item() %>% 
+  rename_items() %>% 
   exploratory_fa(nfactors = 2, cut = 0.1,fm = "ml") %>%
   html_table("Exploratory factor analyzes of classclimate variables.")
 ```
 
-# Q2a: To what extend can behavioral problems in a class be explained by means of components of social-emotional wellbeing?
+# Q2a
 
 ```{r}
 fit <- lme(itrf_sw ~ feess_si + soc_positivity + soc_relatedness + sar_victim + sar_perpetrator + age + migration_background + sex, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
@@ -195,8 +199,7 @@ fit <- lme(itrf_opp ~ feess_si + soc_positivity  + soc_relatedness + sar_victim 
 html_regression(fit, title = "Oppositional behavior regressed on wellbing variables")
 ```
 
-# Q2b: To what extend can the average amount of behavioral problems in a class be explained by components of social-emotional classclimate? 
-
+# Q2b
 
 ```{r}
 fit <- lm(itrf_sw_mean ~ feess_si_mean + soc_positivity_mean + soc_relatedness_mean   + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean, data = dat_agg, na.action = na.omit)
@@ -218,7 +221,7 @@ fit <- lm(itrf_opp_mean ~ feess_si_mean + soc_positivity_mean + soc_relatedness_
 html_regression(fit, title = "Opositional behavior regressed on wellbing variables")
 ```
 
-# Q2c: To what extend does the social-emotional classclimate contribute to individual behavioral problems?
+# Q2c
 
 ```{r}
 dat_l12 <- full_join(dat, dat_agg, by = "id_class_teacher")
@@ -246,12 +249,12 @@ html_regression(fit, title = "Oppositional behavior regressed on wellbing and cl
 ```
 
 
-# Q3a: Can we find profiles of components of social-emotional wellbeing?
+# Q3a
 
 ```{r}
 dat2 <- dat %>%
   select(!!var_cc_l1) %>%
-  rename_item() %>%
+  rename_items() %>%
   na.omit() %>%
   mutate(across(everything(), scale))
 
@@ -273,7 +276,6 @@ fit_bic <- readRDS("fit_bic.rds")
 # saveRDS(bootstrap, "bootstrap.rds")
 # bootstrap <- readRDS("bootstrap.rds")
 ```
-
 
 
 ```{r}
@@ -327,12 +329,12 @@ p
 
 ```
 
-# Q3b: Can we find profiles of components of social-emotional classclimate?
+# Q3b
 
 ```{r}
 dat2 <- dat_agg %>%
   select(!!var_cc_l2) %>%
-  rename_item() %>%
+  rename_items() %>%
   na.omit() %>%
   mutate(across(everything(), scale))
 
@@ -374,12 +376,12 @@ p
 
 ```
 
-# Q3c: What is the nexus between the profiles of social-emotional wellbeing and behavioral problems?
+# Q3c
 
 ```{r}
 dat2 <- dat %>%
   select(!!var_cc_l1) %>% 
-  rename_item() %>%
+  rename_items() %>%
   na.omit() %>%
   mutate(across(everything(), scale))
 
@@ -411,12 +413,12 @@ dat2 %>% group_by(profile) %>%
 
 ```
 
-# Q3d: What is the nexus between the profiles of social-emotional classclimate and behavioral problems?
+# Q3d
 
 ```{r}
 dat2 <- dat_agg %>%
   select(!!var_cc_l2) %>%
-  rename_item() %>%
+  rename_items() %>%
   na.omit() %>%
   mutate(across(everything(), scale))
 
