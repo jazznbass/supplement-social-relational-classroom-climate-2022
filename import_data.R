@@ -73,6 +73,9 @@ dic_attr(dat$sex_male, "item_label") <- "Sex male"
 dic_attr(dat$sex, "item_label") <- "Sex"
 dic_attr(dat$age, "item_label") <- "Age"
 
+dic_attr(dat$feess_si, "item_label") <- "Social integration"
+dic_attr(dat$feess_ga, "item_label") <- "Teacher acceptance"
+
 class(dat$age) <- c("dic", "numeric")
 
 
@@ -120,8 +123,8 @@ dat_mean <- dat_mean %>%
     sex_male_mean = dic(sex_male_mean, item_label = "Proportion male"),
     sar_perpetrator_mean = dic(sar_perpetrator_mean, item_label = "Average bullying perpetrator"),
     sar_victim_mean = dic(sar_victim_mean, item_label = "Average bullying victim"),
-    feess_si_mean = dic(feess_si_mean, item_label = "Average feeling of social inclusion"),
-    feess_ga_mean = dic(feess_ga_mean, item_label = "Average feeling of social acceptance by teacher"),
+    feess_si_mean = dic(feess_si_mean, item_label = "Average social inclusion"),
+    feess_ga_mean = dic(feess_ga_mean, item_label = "Average tacher acceptance"),
     age_mean = dic(age_mean, item_label = "Average age"),
     itrf_sw_mean = dic(itrf_sw_mean, item_label = "Average social withdrawal"),
     itrf_apd_mean = dic(itrf_apd_mean, item_label = "Average academically disorganized"),
