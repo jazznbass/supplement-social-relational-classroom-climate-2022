@@ -38,9 +38,10 @@ dat <- dat %>% filter(school_type == "GL") # only primary schools
 dat$sar_victim <- score_scale(dat, scale == "sar" & subscale == "v", label = "Bullying victim")
 dat$sar_perpetrator <- score_scale(dat, scale == "sar" & subscale == "o", label = "Bullying perpetrator")
 
-# scale feess 1-2 and fees 3-4 on the same scale
-dat$feess_kk  <- dat$FEESS34_KK / 3
-dat$feess_kk[is.na(dat$feess_kk)] <- dat$FEESS12_KK[is.na(dat$feess_kk)]
+# scale feess 1-2 and feess 3-4 on a 0 to 1 scale (FEESS 34 now is from 0 to 3)
+
+## dat$feess_kk  <- dat$FEESS34_KK / 3
+## dat$feess_kk[is.na(dat$feess_kk)] <- dat$FEESS12_KK[is.na(dat$feess_kk)]
 
 dat$feess_si  <- dat$FEESS34_SI / 3
 dat$feess_si[is.na(dat$feess_si)] <- dat$FEESS12_SI[is.na(dat$feess_si)]
@@ -53,7 +54,7 @@ dat <- dat %>% mutate(
   id_class_teacher = anonymise(id_class_teacher), # turn ids to numbers
   LM_in = LM_in / (n_valid_like -1), # turn frequencies to proportions
   LL_in = LL_in / (n_valid_like -1), # turn frequencies to proportions
-  Friend_in = Friend_in / (n_valid_like -1), # turn frequencies to proportions
+  #Friend_in = Friend_in / (n_valid_like -1), # turn frequencies to proportions
   soc_relatedness = (LL_in + LM_in) / 2, # create soc_relatedness
   soc_positivity = ((LM_in - LL_in) + 1) / 2, # create soc_positivity,
   sex_male = as.numeric(sex) - 1,
@@ -78,7 +79,7 @@ class(dat$age) <- c("dic", "numeric")
 ## add level 2 variables (means and sd)
 
 .var <- c(
-  "feess_ga", "feess_si", "LM_in", "LL_in","Friend_in", "sar_victim",
+  "feess_ga", "feess_si", "sar_victim", #"LM_in", "LL_in","Friend_in", 
   "sar_perpetrator", "itrf_sw", "itrf_ad", "itrf_apd", 
   "itrf_opp", "n_valid_like", "soc_relatedness",     
   "soc_positivity", "age", "sex_male", "migration_background_numeric"
@@ -120,7 +121,7 @@ dat_mean <- dat_mean %>%
     sar_perpetrator_mean = dic(sar_perpetrator_mean, item_label = "Average bullying perpetrator"),
     sar_victim_mean = dic(sar_victim_mean, item_label = "Average bullying victim"),
     feess_si_mean = dic(feess_si_mean, item_label = "Average feeling of social inclusion"),
-    feess_ga_mean = dic(feess_ga_mean, item_label = "Average feeling of social acceptance by the teacher"),
+    feess_ga_mean = dic(feess_ga_mean, item_label = "Average feeling of social acceptance by teacher"),
     age_mean = dic(age_mean, item_label = "Average age"),
     itrf_sw_mean = dic(itrf_sw_mean, item_label = "Average social withdrawal"),
     itrf_apd_mean = dic(itrf_apd_mean, item_label = "Average academically disorganized"),

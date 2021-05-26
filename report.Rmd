@@ -1,5 +1,5 @@
 ---
-title: "Analyses: Entangling social-relational classroom climate and its relation to students' behavioral problems"
+title: "Analyses: Disentangling social-relational classroom climate and its relation to students' behavioral problems"
 author: "Jürgen Wilbert"
 date: "Version (`r Sys.Date()`)"
 output:
@@ -38,7 +38,7 @@ dat <- readRDS("data_l1.rds")
 dat_agg <- readRDS("data_l2.rds")
 
 # Define variables: classclimate/wellbeing/behavioral problems/control for all analyzes
-var_cc_l1 <- c("feess_ga", "feess_si", "soc_relatedness","soc_positivity", "sar_victim", "sar_perpetrator") #c("feess_si", "LM_in","Friend_in", "sar_victim", "sar_perpetrator")
+var_cc_l1 <- c("feess_ga", "feess_si", "soc_relatedness","soc_positivity", "sar_victim", "sar_perpetrator")
 var_cc_l2 <- paste0(var_cc_l1, "_mean")
 var_cc_l2_sd <- paste0(var_cc_l1, "_sd")
 
@@ -82,19 +82,19 @@ wmisc::reference_package_version(packages)
 
 # Research questions
 
-Q1: Is there a general factor that could be derived from various aspects (ie perceived social inclusion; sociometric position; bullying involvement) of students peer-relations within the classroom? 
+Q1: Is there a general factor that could be derived from various aspects of students relations within the classroom (ie perceived social inclusion; social position; bullying involvement; feeling of acceptance by the teacher) ? 
 
-Q1a: On an individual level: Is it possible to conflate various aspects of students peer-relations within the classroom into one distinct general factor (social-relational situation)?
+Q1a: On an individual level: Is it possible to conflate various aspects of students relations within the classroom into one distinct general factor (social-relational situation)?
 
-Q1b: On a classroom level: Is it possible to conflate the classroom means of various aspects of students peer-relations into on distinct general factor (social-relational classroom climate)?
+Q1b: On a classroom level: Is it possible to conflate the classroom means of various aspects of students relations into on distinct general factor (social-relational classroom climate)?
 
-Q2: What is the connection between students behavioral problems and various aspects of their peer-relations?
+Q2: What is the connection between students behavioral problems and various aspects of their social relations?
 
-Q2a: On an individual level: To what extend can students behavioral problems in a class be explained by means of various aspects of their peer-relations?
+Q2a: On an individual level: To what extend can students behavioral problems in a class be explained by means of various aspects of their social relations?
 
-Q2b: On a classroom level: To what extend can the average amount of behavioral problems in a classroom be explained by classroom means of various aspects of  students peer-relations? 
+Q2b: On a classroom level: To what extend can the average amount of behavioral problems in a classroom be explained by classroom means of various aspects of students social relations? 
 
-Q2c: To what extend do classroom means of various aspects of  students peer-relations contribute to individual behavioral classroom problems?
+Q2c: To what extend do classroom means of various aspects of students social relations contribute to individual behavioral classroom problems?
 
 Add on questions(probably they will be dropped later :-) )
 
@@ -134,25 +134,18 @@ dat_agg %>%
 
 # Q1a
 
-We conducted a parallel analysis to determine the number of factors to be extracted from the data. The analysis point to three factors (see figure xxx)
+We conducted a parallel analysis to determine the number of factors to be extracted from the data. The analysis point to two factors (see figure xxx)
 
 ```{r parallel_l1, fig.cap="Parallel analysis scree plot."}
 dat %>% select(!!var_cc_l1) %>% fa.parallel(main = "", fa = "fa")
 ```
-VSS analyzes also show the best structural fit for a model with three factors.
-
-```{r nfactor_l1, include = FALSE}
-res <- dat %>% select(!!var_cc_l1) %>% nfactors(n = 5)
-```
 
 ```{r efa_l1}
-
 dat %>% 
   select(!!var_cc_l1) %>% 
   rename_items() %>% 
-  exploratory_fa(nfactors = 2, fm = "minres") %>% 
+  exploratory_fa(nfactors = 2, cut = 0.2, fm = "minres") %>% 
   html_table("Exploratory factor analyzes of wellbeing variables.")
-
 ```
 
 # Q1b
@@ -165,15 +158,11 @@ dat_agg %>%
   fa.parallel(main = "", fa = "fa")
 ```
 
-```{r include = FALSE}
-dat_agg %>% select(!!var_cc_l2) %>% nfactors(n = 6)
-```
-
 ```{r efa_l2}
 dat_agg %>% 
   select(!!var_cc_l2) %>% 
   rename_items() %>% 
-  exploratory_fa(nfactors = 2, cut = 0.1,fm = "ml") %>%
+  exploratory_fa(nfactors = 2, fm = "minres") %>%
   html_table("Exploratory factor analyzes of classclimate variables.")
 ```
 
