@@ -21,17 +21,37 @@ anonymise <- function(x) {
   factor(x, labels = paste0("ID_", seq_along(unique(x))))
 }
 
-## remember current id
-dir <- getwd()
+setwd(rstudioapi::getActiveProject())
 
 ## import dataset
 source(file.path(DIR$PROJECT$MM20, "mm20_control_file.R"))
-setwd(dir_mm20$data_2019_students_clean)
-dat <- readRDS("2019_students.rds")
+dat <- readRDS(file.path(dir_mm20$data_2019_students_clean, "2019_students.rds"))
+
+# only needed for teacher sample description
+dat_teachers <- readRDS(file.path(dir_mm20$data_2019_school_clean, "2019_all.rds"))
 
 ## filter and prepare data
 
 dat <- dat %>% filter(school_type == "GL") # only primary schools
+
+## Teacher sample desription
+
+ids <- unique(dat$id_class_teacher)
+dat_teachers <- dat_teachers %>% 
+  filter(sample_group == "teachers" & id_subject %in% ids) %>%
+  summarise(
+    median_age_category = median(age, na.rm = TRUE), # 3 = 41-50 years
+    percentage_male = (mean(sex, na.rm = TRUE) - 1) * 100,
+    median_years_teacher_category = median(years_teacher, na.rm = TRUE) # 4 = larger that 10
+  ) %>%
+  mutate(
+    median_age_category = recode(median_age_category, "3" = "41-50 years"),
+    median_years_teacher_category = recode(median_years_teacher_category, "4" = "More than 10 years")
+  )
+
+saveRDS(dat_teachers, "data_teachers.rds")
+
+
 
 # score bullying scales
 
@@ -100,6 +120,23 @@ dat_mean <- dat %>% group_by(id_class_teacher) %>%
 
 #dat <- full_join(dat, dat_mean, by = "id_class_teacher")
 
+## Item analyzes for scales
+
+scales <- list(
+  "Social withdrawal" = select_items(dat, scale == "itrf" & subscale_2 == "SW", names_only = TRUE),
+  "Anxious/depressed" = select_items(dat, scale == "itrf" & subscale_2 == "AD", names_only = TRUE),
+  "Academically disorganized" = select_items(dat, scale == "itrf" & subscale_2 == "APD", names_only = TRUE),
+  "Oppositional behavior" = select_items(dat, scale == "itrf" & subscale_2 == "OPP", names_only = TRUE),
+  "FEESS 1/2 teacher acceptance" = select_items(dat, scale == "FEESS_1-2" & subscale == "GA", names_only = TRUE),
+  "FEESS 3/4 teacher acceptance" = select_items(dat, scale == "FEESS_3-4" & subscale == "GA", names_only = TRUE),
+  "FEESS 1/2 social inclusion" = select_items(dat, scale == "FEESS_1-2" & subscale == "SI", names_only = TRUE),
+  "FEESS 3/4 social inclusion" = select_items(dat, scale == "FEESS_3-4" & subscale == "SI", names_only = TRUE),
+  "Bullying perpetrator" = select_items(dat, scale == "sar" & subscale == "o", names_only = TRUE),
+  "Bullying victim" = select_items(dat, scale == "sar" & subscale == "v", names_only = TRUE)
+)
+
+saveRDS(scaledic::alpha_table(dat, scales), "data_alpha.rds")
+
 ## select variables of interest
 
 var_control <- c("id_class_teacher", "age", "migration_background", "sex", "sex_male", "migration_background_numeric", "grade")
@@ -134,8 +171,7 @@ dat_mean <- dat_mean %>%
 
 dat_mean <- dic_haven(dat_mean)
 
-setwd(dir)
-
 saveRDS(dat, "data_l1.rds")
 saveRDS(dat_mean, "data_l2.rds")
+
 

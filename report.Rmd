@@ -36,7 +36,8 @@ invisible(sapply(packages, library, character.only = TRUE))
 
 dat <- readRDS("data_l1.rds")
 dat_agg <- readRDS("data_l2.rds")
-
+dat_teachers <- readRDS("data_teachers.rds")
+dat_alpha <- readRDS("data_alpha.rds")
 # Define variables: classclimate/wellbeing/behavioral problems/control for all analyzes
 var_cc_l1 <- c("feess_ga", "feess_si", "soc_relatedness","soc_positivity", "sar_victim", "sar_perpetrator")
 var_cc_l2 <- paste0(var_cc_l1, "_mean")
@@ -92,12 +93,23 @@ Q2: What is the connection between students behavioral problems and various aspe
 
 Q2a: On an individual level: To what extend can students behavioral problems in a class be explained by means of various aspects of their social relations?
 
-Q2b: On a classroom level: To what extend can the average amount of behavioral problems in a classroom be explained by classroom means of various aspects of students social relations? 
+Q2b: In extension of hypothesis Q2a: To what extend do classroom means of various aspects of students social relations contribute to individual behavioral classroom problems?
 
-Q2c: To what extend do classroom means of various aspects of students social relations contribute to individual behavioral classroom problems?
+Q2c: On a classroom level: To what extend can the average amount of behavioral problems in a classroom be explained by classroom means of various aspects of students social relations? 
+
+# Material
+
+```{r alpha}
+  dat_alpha %>% html_table("Item Analyzes with the data of the present study.")
+```
 
 
 # Descriptives of all variables
+
+```{r teachers_sample}
+  dat_teachers %>% t() %>% html_table(title = "Teacher sample", footnote = "Age and active years as a teacher were administered as categorical variables (age: 20-30; 31-40, 41-50, 51-60, > 60; active years: < 1, 1-3, 4-10, > 10)")
+```
+
 
 ```{r descriptives_l1}
 .var <- c(var_cc_l1, var_bp_l1, "age", "sex_male", "migration_background_numeric")
@@ -138,7 +150,7 @@ dat %>%
   select(!!var_cc_l1) %>% 
   rename_items() %>% 
   exploratory_fa(nfactors = 2, cut = 0.2, fm = "minres") %>% 
-  html_table("Exploratory factor analyzes of wellbeing variables.")
+  html_table("Exploratory factor analyzes of social relation variables.")
 ```
 
 # Q1b
@@ -156,96 +168,70 @@ dat_agg %>%
   select(!!var_cc_l2) %>% 
   rename_items() %>% 
   exploratory_fa(nfactors = 2, fm = "minres") %>%
-  html_table("Exploratory factor analyzes of classclimate variables.")
+  html_table("Exploratory factor analyzes of mean social relation variables.")
 ```
 
-# Q2a
+# Q2a and Q2b
 
 ```{r}
 dat_l12 <- full_join(dat, dat_agg, by = "id_class_teacher")
 ```
 
-
 ```{r}
-#fit <- lme(itrf_sw ~ feess_si + feess_ga + soc_positivity + soc_relatedness + sar_victim + sar_perpetrator + age + migration_background + sex, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
-
-#html_regression(fit, title = "Social withdrawal regressed on wellbing variables")
-
 fit_l1 <- lme(itrf_sw ~ feess_si + feess_ga + soc_relatedness + soc_positivity + sar_victim + sar_perpetrator + migration_background + age + sex, random =~ 1 | id_class_teacher, data = dat_l12, na.action = na.omit)
 
 fit_l2 <- update(fit_l1, .~. +feess_si_mean + feess_ga_mean + soc_relatedness_mean + soc_positivity_mean + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean)
 
-html_regression(fit_l1, fit_l2, title = "Social withdrawal regressed on wellbing and classclimate variables", dv.labels = c("Model 1", "Model 2"))
 
+html_regression(fit_l1, fit_l2, title = "Social withdrawal regressed on individual social-relations and social-relational classclimate", dv.labels = c("Model 1", "Model 2"))
 ```
 
 ```{r}
-fit <- lme(itrf_ad ~ feess_si + feess_ga + soc_positivity  + soc_relatedness + sar_victim + sar_perpetrator+ age + migration_background + sex, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
-html_regression(fit, title = "Anxiety/depression regressed on wellbing variables")
+fit_l1 <- lme(itrf_ad ~ feess_si + feess_ga + soc_relatedness + soc_positivity + sar_victim + sar_perpetrator + migration_background + age + sex, random =~ 1 | id_class_teacher, data = dat_l12, na.action = na.omit)
+
+fit_l2 <- update(fit_l1, .~. +feess_si_mean + feess_ga_mean + soc_relatedness_mean + soc_positivity_mean + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean)
+
+html_regression(fit_l1, fit_l2, title = "Anxiety/depression regressed on individual social-relations and social-relational classclimate", dv.labels = c("Model 1", "Model 2"))
 ```
 
 ```{r}
-fit <- lme(itrf_apd ~ feess_si + feess_ga + soc_positivity  + soc_relatedness + sar_victim + sar_perpetrator+ age + migration_background + sex, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
-html_regression(fit, title = "Academic disorganized behavior regressed on wellbing variables")
+fit_l1 <- lme(itrf_apd ~ feess_si + feess_ga + soc_relatedness + soc_positivity + sar_victim + sar_perpetrator + migration_background + age + sex, random =~ 1 | id_class_teacher, data = dat_l12, na.action = na.omit)
+
+fit_l2 <- update(fit_l1, .~. +feess_si_mean + feess_ga_mean + soc_relatedness_mean + soc_positivity_mean + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean)
+
+html_regression(fit_l1, fit_l2, title = "Academic disorganized behavior regressed on individual social-relations and social-relational classclimate", dv.labels = c("Model 1", "Model 2"))
 ```
 
 ```{r}
-fit <- lme(itrf_opp ~ feess_si + feess_ga +  soc_positivity  + soc_relatedness + sar_victim + sar_perpetrator+ age + migration_background + sex, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
+fit_l1 <- lme(itrf_opp ~ feess_si + feess_ga + soc_relatedness + soc_positivity + sar_victim + sar_perpetrator + migration_background + age + sex, random =~ 1 | id_class_teacher, data = dat_l12, na.action = na.omit)
 
+fit_l2 <- update(fit_l1, .~. +feess_si_mean + feess_ga_mean + soc_relatedness_mean + soc_positivity_mean + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean)
 
-html_regression(fit, title = "Oppositional behavior regressed on wellbing variables")
-```
+html_regression(fit_l1, fit_l2, title = "Oppositional behavior regressed on individual social-relations and social-relational classclimate", dv.labels = c("Model 1", "Model 2"))
 
-# Q2b
-
-```{r}
-fit <- lm(itrf_sw_mean ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean   + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean, data = dat_agg, na.action = na.omit)
-html_regression(fit, title = "Social withdrawal regressed on classclimate")
-```
-
-```{r}
-fit <- lm(itrf_ad_mean ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean + sar_victim_mean + sar_perpetrator_mean+ age_mean + migration_background_numeric_mean + sex_male_mean, data = dat_agg, na.action = na.omit)
-html_regression(fit, title = "Anxiety/depression regressed on classclimate")
-```
-
-```{r}
-fit <- lm(itrf_apd_mean ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean + sar_victim_mean + sar_perpetrator_mean+ age_mean + migration_background_numeric_mean + sex_male_mean, data = dat_agg, na.action = na.omit)
-html_regression(fit, title = "Academic disorganized behavior regressed on classclimate")
-```
-
-```{r}
-fit <- lm(itrf_opp_mean ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean, data = dat_agg, na.action = na.omit)
-html_regression(fit, title = "Opositional behavior regressed on wellbing variables")
 ```
 
 # Q2c
 
 ```{r}
-dat_l12 <- full_join(dat, dat_agg, by = "id_class_teacher")
-```
-
-
-```{r}
-fit <- lme(itrf_sw ~ feess_si + feess_ga + soc_relatedness + soc_positivity + sar_victim + sar_perpetrator + feess_si_mean + feess_ga_mean + soc_relatedness_mean + soc_positivity_mean + sar_victim_mean + sar_perpetrator_mean + age + migration_background + age_mean + sex + migration_background_numeric_mean + sex_male_mean, random =~ 1 | id_class_teacher, data = dat_l12, na.action = na.omit)
-html_regression(fit, title = "Social withdrawal regressed on wellbing and classclimate variables")
+fit <- lm(itrf_sw_mean ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean   + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean, data = dat_agg, na.action = na.omit)
+html_regression(fit, title = "Mean social withdrawal regressed on social-relational classclimate")
 ```
 
 ```{r}
-fit <- lme(itrf_ad ~ feess_si + feess_ga +  soc_relatedness + soc_positivity + sar_victim + sar_perpetrator + feess_si_mean + feess_ga_mean + soc_relatedness_mean + soc_positivity_mean + sar_victim_mean + sar_perpetrator_mean + age + migration_background + age_mean + sex + migration_background_numeric_mean + sex_male_mean, random =~ 1 | id_class_teacher, data = dat_l12, na.action = na.omit)
-html_regression(fit, title = "Anxiety/Depression regressed on wellbing and classclimate variables")
+fit <- lm(itrf_ad_mean ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean + sar_victim_mean + sar_perpetrator_mean+ age_mean + migration_background_numeric_mean + sex_male_mean, data = dat_agg, na.action = na.omit)
+html_regression(fit, title = "Mean anxiety/depression regressed on social-relational classclimate")
 ```
 
 ```{r}
-fit <- lme(itrf_apd ~ feess_si + feess_ga + soc_relatedness + soc_positivity + sar_victim + sar_perpetrator + feess_si_mean + feess_ga_mean + soc_relatedness_mean + soc_positivity_mean + sar_victim_mean + sar_perpetrator_mean + age + migration_background + age_mean + sex + migration_background_numeric_mean + sex_male_mean, random =~ 1 | id_class_teacher, data = dat_l12, na.action = na.omit)
-html_regression(fit, title = "Academic disengagement regressed on wellbing and classclimate variables")
+fit <- lm(itrf_apd_mean ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean + sar_victim_mean + sar_perpetrator_mean+ age_mean + migration_background_numeric_mean + sex_male_mean, data = dat_agg, na.action = na.omit)
+html_regression(fit, title = "Mean academic disorganized behavior regressed on social-relational classclimate")
 ```
 
 ```{r}
-fit <- lme(itrf_opp ~ feess_si + feess_ga + soc_relatedness + soc_positivity + sar_victim + sar_perpetrator + feess_si_mean + feess_ga_mean + soc_relatedness_mean + soc_positivity_mean + sar_victim_mean + sar_perpetrator_mean + age + migration_background + age_mean + sex + migration_background_numeric_mean + sex_male_mean, random =~ 1 | id_class_teacher, data = dat_l12, na.action = na.omit)
-html_regression(fit, title = "Oppositional behavior regressed on wellbing and classclimate variables")
+fit <- lm(itrf_opp_mean ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean, data = dat_agg, na.action = na.omit)
+html_regression(fit, title = "Mean opositional behavior regressed on social-relational classclimate")
 ```
-
-
 
 
 # Reference

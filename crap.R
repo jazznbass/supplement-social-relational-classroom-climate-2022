@@ -231,4 +231,12 @@ dat2 %>% group_by(profile) %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+#fit <- lme(itrf_sw ~ feess_si + feess_ga + soc_positivity + soc_relatedness + sar_victim + sar_perpetrator + age + migration_background + sex, random =~ 1 | id_class_teacher, data = dat, na.action = na.omit)
+
+#html_regression(fit, title = "Social withdrawal regressed on wellbing variables")
+
+```{r}
+fit <- lme(itrf_sw ~ feess_si + feess_ga + soc_relatedness + soc_positivity + sar_victim + sar_perpetrator + feess_si_mean + feess_ga_mean + soc_relatedness_mean + soc_positivity_mean + sar_victim_mean + sar_perpetrator_mean + age + migration_background + age_mean + sex + migration_background_numeric_mean + sex_male_mean, random =~ 1 | id_class_teacher, data = dat_l12, na.action = na.omit)
+html_regression(fit, title = "Social withdrawal regressed on wellbing and classclimate variables")
+```
 
