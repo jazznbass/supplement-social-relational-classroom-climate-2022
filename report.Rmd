@@ -64,7 +64,7 @@ html_table <- function(table, title = "", footnote = "") {
 }
 
 html_regression <- function(fit, ...) {
-  sjPlot::tab_model(fit, ..., show.est = FALSE, show.std = TRUE, show.se = TRUE, show.ci = FALSE, string.est = "B", string.std = "Beta", string.se = "SE B", string.std_se = "SE", p.style = "stars") 
+  sjPlot::tab_model(fit, ..., show.est = FALSE, show.std = TRUE, show.se = TRUE, show.ci = FALSE, string.est = "B", string.std = "Beta", string.se = "SE B", string.std_se = "SE")#, p.style = "stars") 
 }
 
 ```
@@ -96,6 +96,24 @@ Q2a: On an individual level: To what extend can students behavioral problems in 
 Q2b: In extension of hypothesis Q2a: To what extend do classroom means of various aspects of students social relations contribute to individual behavioral classroom problems?
 
 Q2c: On a classroom level: To what extend can the average amount of behavioral problems in a classroom be explained by classroom means of various aspects of students social relations? 
+
+# Analyzing strategy
+
+[This paragraph will later be included into the manuscript and deleted here]
+
+*Question 1a: Factor structure of social-relation variables*
+
+*Question 1b: Factor structure of Social-relational classclimate variables*
+
+*Question 2a and b: Social-relations and behavior problems*
+
+*Question 2c: Social-relational classclimate and average behavior problems*
+
+Following Foster-Johson et. al. (2018), we calculated means of all variables for each class. The outcome variables (means of behavioral problems per class) were predicted through the means of the social-relation variables. A separate OLS regression was calculated for each behavioral problem variable. 
+
+(Foster-Johnson, L., & Kromrey, J. D. (2018). Predicting group-level outcome variables: An empirical comparison of analysis strategies. Behavior Research Methods, 50(6), 2461–2479. https://doi.org/10.3758/s13428-018-1025-8)
+
+
 
 # Material
 
@@ -171,7 +189,11 @@ dat_agg %>%
   html_table("Exploratory factor analyzes of mean social relation variables.")
 ```
 
-# Q2a and Q2b
+# Q2a, Q2b, and Q2c
+
+> Note for my co-authors: I changed the analyzes for Q2c from an aggregated OLS regression approach to a multilevel means-as-outcome model. While the unstandardized estimators are very similar in both models, the latter (means-as-outcome) model has much lower standardized betas. Probably this is due to a significant proportion of within class variance that has not been accounted for in the simple aggregated OLS regression (due to the aggregation). The change allows for representing all three models in one table, which I find much more convenient.
+
+For calculating the influence of the average social relations within a class on the average behavior problems in a class, we fitted a mean-as-outcome model to the data. Mean-as-outcome model are multilevel models with level 2 predictors (here: the class level) but no level 1 predictors (here: the indivdual level). As a result, the predictors describe the changes in the grand mean of the criteria variable (here: behavior problems) that is due to compositional (here: means) aspects of students social relations within a class.
 
 ```{r}
 dat_l12 <- full_join(dat, dat_agg, by = "id_class_teacher")
@@ -182,8 +204,9 @@ fit_l1 <- lme(itrf_sw ~ feess_si + feess_ga + soc_relatedness + soc_positivity +
 
 fit_l2 <- update(fit_l1, .~. +feess_si_mean + feess_ga_mean + soc_relatedness_mean + soc_positivity_mean + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean)
 
+fit_mean <- lme(itrf_sw ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean   + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean, random = ~  1|id_class_teacher, data = dat_l12, na.action = na.omit)
 
-html_regression(fit_l1, fit_l2, title = "Social withdrawal regressed on individual social-relations and social-relational classclimate", dv.labels = c("Model 1", "Model 2"))
+html_regression(fit_l1, fit_l2, fit_mean, title = "Social withdrawal regressed on individual social-relations and social-relational classclimate", dv.labels = c("Model 1 (L1)", "Model 2 (L1+L2)", "Model 3 (mean-as-outcome)"))
 ```
 
 ```{r}
@@ -191,7 +214,10 @@ fit_l1 <- lme(itrf_ad ~ feess_si + feess_ga + soc_relatedness + soc_positivity +
 
 fit_l2 <- update(fit_l1, .~. +feess_si_mean + feess_ga_mean + soc_relatedness_mean + soc_positivity_mean + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean)
 
-html_regression(fit_l1, fit_l2, title = "Anxiety/depression regressed on individual social-relations and social-relational classclimate", dv.labels = c("Model 1", "Model 2"))
+fit_mean <- lme(itrf_ad ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean   + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean, random = ~  1|id_class_teacher, data = dat_l12, na.action = na.omit)
+
+html_regression(fit_l1, fit_l2, fit_mean, title = "Anxiety/depression regressed on individual social-relations and social-relational classclimate", dv.labels = c("Model 1 (L1)", "Model 2 (L1+L2)", "Model 3 (mean-as-outcome)"))
+
 ```
 
 ```{r}
@@ -199,7 +225,10 @@ fit_l1 <- lme(itrf_apd ~ feess_si + feess_ga + soc_relatedness + soc_positivity 
 
 fit_l2 <- update(fit_l1, .~. +feess_si_mean + feess_ga_mean + soc_relatedness_mean + soc_positivity_mean + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean)
 
-html_regression(fit_l1, fit_l2, title = "Academic disorganized behavior regressed on individual social-relations and social-relational classclimate", dv.labels = c("Model 1", "Model 2"))
+fit_mean <- lme(itrf_apd ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean   + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean, random = ~  1|id_class_teacher, data = dat_l12, na.action = na.omit)
+
+html_regression(fit_l1, fit_l2, fit_mean, title = "Academic disorganized behavior regressed on individual social-relations and social-relational classclimate", dv.labels = c("Model 1 (L1)", "Model 2 (L1+L2)", "Model 3 (mean-as-outcome)"))
+
 ```
 
 ```{r}
@@ -207,31 +236,10 @@ fit_l1 <- lme(itrf_opp ~ feess_si + feess_ga + soc_relatedness + soc_positivity 
 
 fit_l2 <- update(fit_l1, .~. +feess_si_mean + feess_ga_mean + soc_relatedness_mean + soc_positivity_mean + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean)
 
-html_regression(fit_l1, fit_l2, title = "Oppositional behavior regressed on individual social-relations and social-relational classclimate", dv.labels = c("Model 1", "Model 2"))
+fit_mean <- lme(itrf_opp ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean   + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean, random = ~  1|id_class_teacher, data = dat_l12, na.action = na.omit)
+
+html_regression(fit_l1, fit_l2, fit_mean, title = "Oppositional behavior regressed on individual social-relations and social-relational classclimate", dv.labels = c("Model 1 (L1)", "Model 2 (L1+L2)", "Model 3 (mean-as-outcome)"))
 
 ```
-
-# Q2c
-
-```{r}
-fit <- lm(itrf_sw_mean ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean   + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean, data = dat_agg, na.action = na.omit)
-html_regression(fit, title = "Mean social withdrawal regressed on social-relational classclimate")
-```
-
-```{r}
-fit <- lm(itrf_ad_mean ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean + sar_victim_mean + sar_perpetrator_mean+ age_mean + migration_background_numeric_mean + sex_male_mean, data = dat_agg, na.action = na.omit)
-html_regression(fit, title = "Mean anxiety/depression regressed on social-relational classclimate")
-```
-
-```{r}
-fit <- lm(itrf_apd_mean ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean + sar_victim_mean + sar_perpetrator_mean+ age_mean + migration_background_numeric_mean + sex_male_mean, data = dat_agg, na.action = na.omit)
-html_regression(fit, title = "Mean academic disorganized behavior regressed on social-relational classclimate")
-```
-
-```{r}
-fit <- lm(itrf_opp_mean ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean, data = dat_agg, na.action = na.omit)
-html_regression(fit, title = "Mean opositional behavior regressed on social-relational classclimate")
-```
-
 
 # Reference
