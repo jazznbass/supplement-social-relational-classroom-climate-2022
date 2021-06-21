@@ -4,9 +4,6 @@ title: 'Analyses: Disentangling social-relational classroom climate and its rela
 author: "Jürgen Wilbert"
 date: "Version (`r Sys.Date()`)"
 output:
-  word_document:
-    toc: yes
-    toc_depth: '2'
   html_document:
     theme: cosmo
     df_print: paged
