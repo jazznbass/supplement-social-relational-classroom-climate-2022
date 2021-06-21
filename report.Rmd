@@ -1,17 +1,22 @@
 ---
-title: "Analyses: Disentangling social-relational classroom climate and its relation to students' behavioral problems"
+title: 'Analyses: Disentangling social-relational classroom climate and its relation
+  to students'' behavioral problems'
 author: "Jürgen Wilbert"
 date: "Version (`r Sys.Date()`)"
 output:
+  word_document:
+    toc: yes
+    toc_depth: '2'
   html_document:
     theme: cosmo
     df_print: paged
-    toc: TRUE
+    toc: yes
     toc_depth: 2
     toc_float:
-      collapsed: false
+      collapsed: no
 bibliography: packages.bib
 geometry: a4paper
+csl: apa.csl
 link-citations: yes
 biblio-style: apalike
 ---
@@ -27,7 +32,7 @@ if (!("scaledic" %in% installed.packages()))
 packages <- c(
   'sjPlot', 'knitr', 'semTable', 'kableExtra', 'bookdown', 
   'scaledic', 'Amelia', 'wmisc', 'psych', 'lavaan', 'nlme', 'lme4',
-  'tidyverse', 'readxl', 'gridExtra', 'broom', 'sjPlot', 'mclust'
+  'tidyverse', 'readxl', 'gridExtra', 'broom', 'sjPlot', 'mclust', 'huxtable'
 )
 
 invisible(sapply(packages, library, character.only = TRUE))
@@ -67,6 +72,31 @@ html_regression <- function(fit, ...) {
   sjPlot::tab_model(fit, ..., show.est = FALSE, show.std = TRUE, show.se = TRUE, show.ci = FALSE, string.est = "B", string.std = "Beta", string.se = "SE B", string.std_se = "SE")#, p.style = "stars") 
 }
 
+poly_table <- function(x, caption = "", footnote = "", header = "", width = 1, ...) {
+  
+  x <- as_hux(x) %>%
+    theme_article %>%
+    set_caption(caption) 
+  
+  if (!identical(header, "")) {
+      cols <- rep(" ", length(unlist(header)))
+      for(i in seq_along(header)) cols[min(unlist(header[i]))] <- names(header)[i]
+      x <- do.call(insert_row, c(list(ht = x, after = 0), as.list(cols)))
+      for(i in seq_along(header)) {
+        x <- do.call(merge_cells, list(x, row = 1, col = header[[i]]))
+      }
+      x <- x %>%
+        set_align(1:2, everywhere, "center") %>% 
+        set_tb_padding(1, everywhere, 0) %>% 
+        set_bold(1, everywhere) %>%
+        set_width(1)
+  }
+  
+  if (!is.null(width)) x <- set_width(x, width)
+  if (footnote != "") x <- add_footnote(x, footnote, italic = TRUE)
+  
+  x  
+}
 ```
 
 # Software acknowledgment
@@ -83,7 +113,7 @@ wmisc::reference_package_version(packages)
 
 # Research questions
 
-Q1: Is there a general factor that could be derived from various aspects of students relations within the classroom (ie. social inclusion; social position; bullying involvement; acceptance by the teacher) ? 
+Q1: Is there a general factor that could be derived from various aspects of students relations within the classroom (i.e. social inclusion; social position; bullying involvement; acceptance by the teacher) ?
 
 Q1a: On an individual level: Is it possible to conflate various aspects of students relations within the classroom into one distinct general factor (social-relational situation)?
 
@@ -95,25 +125,23 @@ Q2a: On an individual level: To what extend can students behavioral problems in 
 
 Q2b: In extension of hypothesis Q2a: To what extend do classroom means of various aspects of students social relations contribute to individual behavioral classroom problems?
 
-Q2c: On a classroom level: To what extend can the average amount of behavioral problems in a classroom be explained by classroom means of various aspects of students social relations? 
+Q2c: On a classroom level: To what extend can the average amount of behavioral problems in a classroom be explained by classroom means of various aspects of students social relations?
 
 # Analyzing strategy
 
-[This paragraph will later be included into the manuscript and deleted here]
+We will start with a description of means, standard deviations, and correlations of all variables on an individual level and on a classroom aggregated level.
 
-*Question 1a: Factor structure of social-relation variables*
+For addressing questions 1a (the factor structure of social-relation variables on an individual level) we will firstly determined the number of factors by conducting a parallel analysis. In a second step we will calculate an exploratory factor analysis (factor extraction method: minimal residuals). For addressing question 1b (the factor structure of social-relation variables on a classroom level) we will firstly calculate the means per class for all social-relation variables. Than we will proceed as for question 1b. The analyses for question 1a and b will be conducted with the psych package in R [@R-base; @R-psych].
 
-*Question 1b: Factor structure of Social-relational classclimate variables*
+For answering questions 2a, b, and c (the connection between behavioral problems and social relations), we will conduct a series of multilevel analyses (random intercept models with students nested in classrooms). For question 2a (individual level) we will set up models with each of the four behavioral problem variables as a criteria and the six social-relational variables as predictors. Additionally, we will add migration-background, age, and sex as additional predictors as these variables are expected to be correlated to behavioral problems. Sex and migration background (dichotomous variables) are contrast coded with -1 and 1 (Helmert contrast).
 
-*Question 2a and b: Social-relations and behavior problems*
+For question 2b (influence of social-relations on classroom level on individual behavior) we will firstly calculate the means of the six social-relations variables per class and add these variables as level 2 predictors. Additionally, we will also include the class means for the variables sex (proportion male students per class), migration background (proportion of migration background per class), and age (average age per class). Finally, all level 1 variables (as for question 2a) will be included as predictors.
 
-*Question 2c: Social-relational classclimate and average behavior problems*
+For answering question 2c (influence of social-relations on classroom level on average behavorial problems in a classroom) we will set up a *mean-as-outcome* model for each of the for behavioral criteria. A *mean-as-outcome* model includes only level 2 predictors while the criteria is a level 1 variable (here: behavioral problems). As a result, the predictors will explain differences in the classroom means of the criteria variable. For this, we will include the mean social-relations variables and the mean age, the proportion migration background, and the the proportion male students as predictors (as in the models for questions 2b).
 
-Following Foster-Johson et. al. (2018), we calculated means of all variables for each class. The outcome variables (means of behavioral problems per class) were predicted through the means of the social-relation variables. A separate OLS regression was calculated for each behavioral problem variable. 
+All estimators will be reported standardized. All analyses for questions 2a, b, and c will be conducted in R with the nlme package [@R-nlme]. Regression tables will be created with the help pf the sjplot package [@R-sjPlot].
 
-(Foster-Johnson, L., & Kromrey, J. D. (2018). Predicting group-level outcome variables: An empirical comparison of analysis strategies. Behavior Research Methods, 50(6), 2461–2479. https://doi.org/10.3758/s13428-018-1025-8)
-
-
+The R code for all analyses and minimal data sets for reproducing the results will be provided in the supplementary of this paper.
 
 # Material
 
@@ -121,13 +149,11 @@ Following Foster-Johson et. al. (2018), we calculated means of all variables for
   dat_alpha %>% html_table("Item Analyzes with the data of the present study.")
 ```
 
-
 # Descriptives of all variables
 
 ```{r teachers_sample}
   dat_teachers %>% t() %>% html_table(title = "Teacher sample", footnote = "Age and active years as a teacher were administered as categorical variables (age: 20-30; 31-40, 41-50, 51-60, > 60; active years: < 1, 1-3, 4-10, > 10)")
 ```
-
 
 ```{r descriptives_l1}
 .var <- c(var_cc_l1, var_bp_l1, "age", "sex_male", "migration_background_numeric")
@@ -154,10 +180,7 @@ dat_agg %>%
   wmisc::nice_corrmatrix(upper = FALSE, numbered_columns = TRUE, char_p10 = "T") %>% html_table
 ```
 
-
 # Q1a
-
-We conducted a parallel analysis to determine the number of factors to be extracted from the data. The analysis point to two factors (see figure xxx)
 
 ```{r parallel_l1, fig.cap="Parallel analysis scree plot."}
 dat %>% select(!!var_cc_l1) %>% fa.parallel(main = "", fa = "fa")
@@ -214,7 +237,7 @@ fit_l1 <- lme(itrf_ad ~ feess_si + feess_ga + soc_relatedness + soc_positivity +
 
 fit_l2 <- update(fit_l1, .~. +feess_si_mean + feess_ga_mean + soc_relatedness_mean + soc_positivity_mean + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean)
 
-fit_mean <- lme(itrf_ad ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean   + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean, random = ~  1|id_class_teacher, data = dat_l12, na.action = na.omit)
+fit_mean <- lme(itrf_ad ~ feess_si_mean + feess_ga_mean + soc_positivity_mean + soc_relatedness_mean + sar_victim_mean + sar_perpetrator_mean + age_mean + migration_background_numeric_mean + sex_male_mean, random = ~  1|id_class_teacher, data = dat_l12, na.action = na.omit)
 
 html_regression(fit_l1, fit_l2, fit_mean, title = "Anxiety/depression regressed on individual social-relations and social-relational classclimate", dv.labels = c("Model 1 (L1)", "Model 2 (L1+L2)", "Model 3 (mean-as-outcome)"))
 
