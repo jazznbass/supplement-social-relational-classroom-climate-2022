@@ -1,6 +1,5 @@
 ---
-title: 'Analyses: Disentangling social-relational classroom climate and its relation
-  to students'' behavioral problems'
+title: 'Analyses: Analyses for paper: Social-relational classroom climate and its link to primary students’ behavioral problems'
 author: "Jürgen Wilbert"
 date: "Version (`r Sys.Date()`)"
 output:
@@ -40,6 +39,7 @@ dat <- readRDS("data_l1.rds")
 dat_agg <- readRDS("data_l2.rds")
 dat_teachers <- readRDS("data_teachers.rds")
 dat_alpha <- readRDS("data_alpha.rds")
+
 # Define variables: classclimate/wellbeing/behavioral problems/control for all analyzes
 var_cc_l1 <- c("feess_ga", "feess_si", "soc_relatedness","soc_positivity", "sar_victim", "sar_perpetrator")
 var_cc_l2 <- paste0(var_cc_l1, "_mean")
@@ -108,38 +108,6 @@ wmisc::reference_package_version(packages)
 
 ------------------------------------------------------------------------
 
-# Research questions
-
-Q1: Is there a general factor that could be derived from various aspects of students relations within the classroom (i.e. social inclusion; social position; bullying involvement; acceptance by the teacher) ?
-
-Q1a: On an individual level: Is it possible to conflate various aspects of students relations within the classroom into one distinct general factor (social-relational situation)?
-
-Q1b: On a classroom level: Is it possible to conflate the classroom means of various aspects of students relations into on distinct general factor (social-relational classroom climate)?
-
-Q2: What is the connection between students behavioral problems and various aspects of their social relations?
-
-Q2a: On an individual level: To what extend can students behavioral problems in a class be explained by means of various aspects of their social relations?
-
-Q2b: In extension of hypothesis Q2a: To what extend do classroom means of various aspects of students social relations contribute to individual behavioral classroom problems?
-
-Q2c: On a classroom level: To what extend can the average amount of behavioral problems in a classroom be explained by classroom means of various aspects of students social relations?
-
-# Analyzing strategy
-
-We will start with a description of means, standard deviations, and correlations of all variables on an individual level and on a classroom aggregated level.
-
-For addressing questions 1a (the factor structure of social-relation variables on an individual level) we will firstly determine the number of factors by conducting a parallel analysis. In a second step we will calculate an exploratory factor analysis (factor extraction method: minimal residuals). For addressing question 1b (the factor structure of social-relation variables on a classroom level) we will firstly calculate the means per class for all social-relation variables. After that, we will proceed as for question 1b. The analyses for question 1a and b will be conducted with the psych package in R [@R-base; @R-psych].
-
-For answering questions 2a, b, and c (the connection between behavioral problems and social relations), we will conduct a series of multilevel analyses (random intercept models with students nested in classrooms). For question 2a (individual level) we will set up models with each of the four behavioral problem variables as a criteria and the six social-relational variables as predictors. Additionally, we will add migration-background, age, and sex as additional predictors as these variables are expected to be correlated to behavioral problems. Sex and migration background (dichotomous variables) are contrast coded with -1 and 1 (Helmert contrast).
-
-For question 2b (influence of social-relations on classroom level on individual behavior) we will firstly calculate the means of the six social-relations variables per class and add these variables as level 2 predictors. Additionally, we will also include the class means for the variables sex (proportion male students per class), migration background (proportion of migration background per class), and age (average age per class). Finally, all level 1 variables (as for question 2a) will be included as predictors.
-
-For answering question 2c (influence of social-relations on classroom level on average behavorial problems in a classroom) we will set up a *mean-as-outcome* model for each of the four behavioral criteria. A *mean-as-outcome* model includes only level 2 predictors while the criteria is a level 1 variable (here: behavioral problems). As a result, the predictors will explain differences in the classroom means of the criteria variable. For this, we will include the mean social-relations variables and the mean age, the proportion migration background, and the the proportion male students as predictors (as in the models for questions 2b).
-
-All estimators will be reported standardized. All analyses for questions 2a, b, and c will be conducted in R with the nlme package [@R-nlme]. Regression tables will be created with the help of the sjplot package [@R-sjPlot].
-
-The R code for all analyses and minimal data sets for reproducing the results will be provided in the supplementary of this paper.
-
 # Material
 
 ```{r alpha}
@@ -177,7 +145,7 @@ dat_agg %>%
   wmisc::nice_corrmatrix(upper = FALSE, numbered_columns = TRUE, char_p10 = "T") %>% html_table
 ```
 
-# Q1a
+# Exploratory factor analses
 
 ```{r parallel_l1, fig.cap="Parallel analysis scree plot."}
 dat %>% select(!!var_cc_l1) %>% fa.parallel(main = "", fa = "fa")
@@ -190,10 +158,6 @@ dat %>%
   exploratory_fa(nfactors = 2, cut = 0.2, fm = "minres") %>% 
   html_table("Exploratory factor analyzes of social relation variables.")
 ```
-
-# Q1b
-
-We conducted a parallel analysis to determine the number of factors to be extracted from the data. The analysis point to two factors (see figure xxx).
 
 ```{r nfactors_l2, , fig.cap="Parallel analysis scree plot."}
 dat_agg %>% 
@@ -209,11 +173,7 @@ dat_agg %>%
   html_table("Exploratory factor analyzes of mean social relation variables.")
 ```
 
-# Q2a, Q2b, and Q2c
-
-> Note for my co-authors: I changed the analyzes for Q2c from an aggregated OLS regression approach to a multilevel means-as-outcome model. While the unstandardized estimators are very similar in both models, the latter (means-as-outcome) model has much lower standardized betas. Probably this is due to a significant proportion of within class variance that has not been accounted for in the simple aggregated OLS regression (due to the aggregation). The change allows for representing all three models in one table, which I find much more convenient.
-
-For calculating the influence of the average social relations within a class on the average behavior problems in a class, we fitted a mean-as-outcome model to the data. Mean-as-outcome model are multilevel models with level 2 predictors (here: the class level) but no level 1 predictors (here: the indivdual level). As a result, the predictors describe the changes in the grand mean of the criteria variable (here: behavior problems) that is due to compositional (here: means) aspects of students social relations within a class.
+# Multilevel regression analyses
 
 ```{r}
 dat_l12 <- full_join(dat, dat_agg, by = "id_class_teacher")

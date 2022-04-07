@@ -51,17 +51,12 @@ dat_teachers <- dat_teachers %>%
 
 saveRDS(dat_teachers, "data_teachers.rds")
 
-
-
 # score bullying scales
 
 dat$sar_victim <- score_scale(dat, scale == "sar" & subscale == "v", label = "Bullying victim")
 dat$sar_perpetrator <- score_scale(dat, scale == "sar" & subscale == "o", label = "Bullying perpetrator")
 
 # scale feess 1-2 and feess 3-4 on a 0 to 1 scale (FEESS 34 now is from 0 to 3)
-
-## dat$feess_kk  <- dat$FEESS34_KK / 3
-## dat$feess_kk[is.na(dat$feess_kk)] <- dat$FEESS12_KK[is.na(dat$feess_kk)]
 
 dat$feess_si  <- dat$FEESS34_SI / 3
 dat$feess_si[is.na(dat$feess_si)] <- dat$FEESS12_SI[is.na(dat$feess_si)]
@@ -118,8 +113,6 @@ dat_mean <- dat %>% group_by(id_class_teacher) %>%
     )
   )
 
-#dat <- full_join(dat, dat_mean, by = "id_class_teacher")
-
 ## Item analyzes for scales
 
 scales <- list(
@@ -145,8 +138,6 @@ var <- c(
   "sar_perpetrator", "itrf_sw", "itrf_ad", "itrf_apd", "itrf_opp", "n_valid_like",
   "soc_relatedness", "soc_positivity"
 )
-
-#var_l2 <- paste0(var, rep(c("", "_mean", "_sd"), each = length(var)))
 
 dat <- dat %>% select(!!c(var, var_control))
 
